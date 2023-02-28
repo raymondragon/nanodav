@@ -5,11 +5,13 @@ A nano WebDav server writen in golang aims to be lightweight simple and easy to 
 ~ $ nanodav -h
 Usage of nanodav:
   -a string
-    	address:port to listen (default ":2800")
+    	server address:port (default "0.0.0.0:2800")
   -d string
-    	directory to serve (default ".")
+    	working directory to serve (default "./")
+  -lock
+    	switching on read-only mode
   -n string
-    	user name (default "admin")
+    	user name for authorization (default "admin")
   -t string
-    	user token (default "adm1n")
+    	user token for authorization (default "adm1n")
 ```
