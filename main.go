@@ -39,5 +39,6 @@ func DavAuth(w http.ResponseWriter, r *http.Request) {
                                 }
                         dav.ServeHTTP(w, r)
                 }
+                dav.ServeHTTP(w, r)
         }
 }
