@@ -6,21 +6,29 @@ import (
         "golang.org/x/net/webdav"
 )
 var (
-        add = flag.String("a","0.0.0.0:2800", "server address:port")
-        dir = flag.String("d", "./", "working directory to serve")
-        loc = flag.Bool("lock", false, "switching on read-only mode")
-        nam = flag.String("n", "admin", "user name for authorization")
-        tok = flag.String("t", "adm1n", "user token for authorization")
+        add = flag.String("add","0.0.0.0:2800", "server address:port")
+        crt = flag.String("crt","", "path/to/your/tls.crt")
+        dir = flag.String("dir", "./", "working directory to serve")
+        key = flag.String("key","", "path/to/your/tls.key")
+        loc = flag.Bool("lock", false, "enable read-only mode")
+        nam = flag.String("name", "", "username for authorization")
+        pas = flag.String("pass", "", "password for authorization")
+        tls = flag.Bool("tls", false, "enable tls mode")
 )
 func main() {
         flag.Parse()
         http.HandleFunc("/", DavAuth)
-        log.Printf("%v -> starting webdav service for %v, read-only mode: %v", *add, *dir, *loc)
-        log.Fatal(http.ListenAndServe(*add, nil))
+        if *tls && *crt != "" && *key != "" {
+                log.Printf("%v -> webdav service started, read-only mode: %v, tls mode: enabled", *add, *loc)
+                log.Fatal(http.ListenAndServeTLS(*add, *crt, *key, nil))
+        } else {
+                log.Printf("%v -> webdav service started, read-only mode: %v, tls mode: disabled", *add, *loc)
+                log.Fatal(http.ListenAndServe(*add, nil))
+        }
 }
 func DavAuth(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-        if name, token, set := r.BasicAuth(); !set || name != *nam || token != *tok {
+        if name, pass, set := r.BasicAuth(); !set || name != *nam || pass != *pas {
                 log.Printf("%v -> unauthorized connection received, authorizing...", r.RemoteAddr)
                 w.WriteHeader(401)
         } else {
