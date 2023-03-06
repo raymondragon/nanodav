@@ -13,11 +13,11 @@ Usage of nanodav:
   -key string
     	path/to/your/tls.key (default blank)
   -lock
-    	enable read-only mode  (default false)
+    	enable read-only mode (default false)
   -name string
-    	username for authorization  (default blank)
+    	username for authorization (default blank)
   -pass string
-    	password for authorization  (default blank)
+    	password for authorization (default blank)
   -pre string
     	webdav prefix path (default "/")
 ```
