@@ -10,9 +10,9 @@ var(
 	crt = flag.String("crt","", "path/to/your/tls.crt (default blank)")
 	dir = flag.String("dir", ".", "working directory to serve")
 	key = flag.String("key","", "path/to/your/tls.key (default blank)")
-	loc = flag.Bool("lock", false, "enable read-only mode  (default false)")
-	nam = flag.String("name", "", "username for authorization  (default blank)")
-	pas = flag.String("pass", "", "password for authorization  (default blank)")
+	loc = flag.Bool("lock", false, "enable read-only mode (default false)")
+	nam = flag.String("name", "", "username for authorization (default blank)")
+	pas = flag.String("pass", "", "password for authorization (default blank)")
 	pre = flag.String("pre", "/", "webdav prefix path")
 	noa bool
 	tls bool
