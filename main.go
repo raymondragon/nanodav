@@ -21,19 +21,21 @@ func main() {
 	flag.Parse()
 	noa = (*nam == "" && *pas == "")
 	tls = (*crt != "" && *key != "")
-	http.HandleFunc(*pre, DavCheck)
+	http.HandleFunc("/", DavCheck)
 	if tls {
-		log.Printf("NanoDav File Server Status -> Authorization Required: %t, TLS Enabled: %t, Read-only Enabled: %v", !noa, tls, *loc)
+		log.Printf("-> STATUS -> Authorization Required: %t, TLS Enabled: %t, Read-only Enabled: %v", !noa, tls, *loc)
 		log.Fatal(http.ListenAndServeTLS(*add, *crt, *key, nil))
 	} else {
-		log.Printf("NanoDav File Server Status -> Authorization Required: %t, TLS Enabled: %t, Read-only Enabled: %v", !noa, tls, *loc)
+		log.Printf("-> STATUS -> Authorization Required: %t, TLS Enabled: %t, Read-only Enabled: %v", !noa, tls, *loc)
 		log.Fatal(http.ListenAndServe(*add, nil))
 	}
 }
 func DavCheck(w http.ResponseWriter, r *http.Request) {
 	dav := &webdav.Handler {
+		Prefix: *pre,
 		FileSystem: webdav.Dir(*dir), 
 		LockSystem: webdav.NewMemLS(),
+		Logger: func(r *http.Request, e error) { log.Printf("-> %s -> %v", r.Method, r.RemoteAddr) },
 	}
 	switch {
 	case noa == false && *loc == true:
