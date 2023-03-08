@@ -13,7 +13,7 @@ var(
 	loc = flag.Bool("lock", false, "enable read-only mode (default false)")
 	nam = flag.String("name", "", "username for authorization (default blank)")
 	pas = flag.String("pass", "", "password for authorization (default blank)")
-	pre = flag.String("pre", "/", "webdav prefix path")
+	pre = flag.String("pre", "/", "webdav prefix: /*")
 	noa bool
 	tls bool
 )
@@ -23,10 +23,10 @@ func main() {
 	tls = (*crt != "" && *key != "")
 	http.HandleFunc("/", DavCheck)
 	if tls {
-		log.Printf("-> STATUS -> Authorization Required: %t, TLS Enabled: %t, Read-only Enabled: %v", !noa, tls, *loc)
+		log.Printf("-> %v -> [Authorization]=%t [TLS/https]=%t [Read-only]=%v", *add, !noa, tls, *loc)
 		log.Fatal(http.ListenAndServeTLS(*add, *crt, *key, nil))
 	} else {
-		log.Printf("-> STATUS -> Authorization Required: %t, TLS Enabled: %t, Read-only Enabled: %v", !noa, tls, *loc)
+		log.Printf("-> %v -> [Authorization]=%t [TLS/https]=%t [Read-only]=%v", *add, !noa, tls, *loc)
 		log.Fatal(http.ListenAndServe(*add, nil))
 	}
 }
@@ -35,7 +35,13 @@ func DavCheck(w http.ResponseWriter, r *http.Request) {
 		Prefix: *pre,
 		FileSystem: webdav.Dir(*dir), 
 		LockSystem: webdav.NewMemLS(),
-		Logger: func(r *http.Request, e error) { log.Printf("-> %s -> %v", r.Method, r.RemoteAddr) },
+		Logger: func(r *http.Request, e error) {
+			if e != nil {
+				log.Printf("-> %v -> [%s ERROR]=%v [URL]=%v", r.RemoteAddr, r.Method, e, r.URL)
+			} else {
+				log.Printf("-> %v -> [%s] [URL]=%v", r.RemoteAddr, r.Method, r.URL)
+			}
+		},
 	}
 	switch {
 	case noa == false && *loc == true:
@@ -43,8 +49,10 @@ func DavCheck(w http.ResponseWriter, r *http.Request) {
 		uname, passwd, _ := r.BasicAuth()
 		if uname == *nam && passwd == *pas {
 			switch r.Method {
-			case "PUT", "DELETE", "PROPPATCH", "MKCOL", "COPY", "MOVE": w.WriteHeader(403)
-			default: dav.ServeHTTP(w, r)
+			case "PUT", "DELETE", "PROPPATCH", "MKCOL", "COPY", "MOVE":
+				w.WriteHeader(403)
+			default:
+				dav.ServeHTTP(w, r)
                 	}
 		} else {
 			w.WriteHeader(401)
@@ -59,8 +67,10 @@ func DavCheck(w http.ResponseWriter, r *http.Request) {
 		}
 	case noa == true && *loc == true:
 		switch r.Method {
-		case "PUT", "DELETE", "PROPPATCH", "MKCOL", "COPY", "MOVE": w.WriteHeader(403)
-		default: dav.ServeHTTP(w, r)
+		case "PUT", "DELETE", "PROPPATCH", "MKCOL", "COPY", "MOVE":
+			w.WriteHeader(403)
+		default:
+			dav.ServeHTTP(w, r)
                 }
 	default: dav.ServeHTTP(w, r)
 	}
